@@ -7,9 +7,12 @@ library(dplyr)
 
 activityInfoLogin("udaraz@unicef.org", "akhter123")
 
+
+
+
+
 df_DAMData_All <- activityinfo::queryTable("cfchybhl3tytgjd3",columns = c(id = "_id"
                                                                           ,SN = "SN"
-<<<<<<< HEAD
                                                                           ,NGO_Code = "NGO_Code"
                                                                           ,NGO_Type = "NGO_Type"
                                                                           ,IP_Code = "IP_Code"
@@ -152,6 +155,9 @@ df_DAMData_All <- activityinfo::queryTable("cfchybhl3tytgjd3",columns = c(id = "
                                                                           ,Indic_4_2_1 = "Indic_4_2_1"
                                                                           ,Indic_4_2_2 = "Indic_4_2_2"
                                                                           ,Including_Date = "Including_Date",truncate.strings = TRUE))
+
+
+
 
 
 
