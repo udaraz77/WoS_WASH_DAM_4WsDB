@@ -130,6 +130,7 @@ df_DAMData_All <- activityinfo::queryTable("c8qdlxil3sth2zm3",columns = c(id = "
                                                                           ,WaterPerPersonPerDay = "WaterPerPersonPerDay"
                                                                           ,PersonPerLatrine = "PersonPerLatrine"
                                                                           ,TotalPer_Watervalum = "TotalPer_Watervalum"
+                                                                          ,month4w ="month4w"
                                                                           ,SO1_1_1 = "SO1_1_1"
                                                                           ,SO1_1_2 = "SO1_1_2"
                                                                           ,Indic_1_1_1 = "Indic_1_1_1"
@@ -150,3 +151,41 @@ df_DAMData_All <- activityinfo::queryTable("c8qdlxil3sth2zm3",columns = c(id = "
                                                                           ,Indic_4_2_1 = "Indic_4_2_1"
                                                                           ,Indic_4_2_2 = "Indic_4_2_2"
                                                                           ,Including_Date = "Including_Date",truncate.strings = TRUE))
+
+
+
+
+
+df_DAMData_All$SO1_1_1[is.na(df_DAMData_All$SO1_1_1)]<-0
+df_DAMData_All$SO1_1_2[is.na(df_DAMData_All$SO1_1_2)]<-0
+df_DAMData_All$SO2[is.na(df_DAMData_All$SO2)]<-0
+
+#***************************DAM WASH-IND (SO1)***********************************************************************
+
+
+
+
+
+
+
+DAM4WS_Data_Pivot12[,"sector"]<- "WASH_ind"
+#***************************DAM WASH-Dir (SO2)***********************************************************************
+
+
+
+
+
+
+
+
+DAM4WS_Data_Pivot12[,"sector"]<- "WASH_dir"
+
+WASH_DAM1 <- rbind(NWS4WS_Data_Pivot12,NWS4WS_Data_Pivot22)
+WASH_DAM <- rbind(NWS4WS_Data_Pivot12,NWS4WS_Data_Pivot22)
+
+#****************************OCHA ********************************************************************
+
+
+
+
+#****************************DAM Each monthly table
