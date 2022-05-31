@@ -1,5 +1,5 @@
 ##---- NES Results Calculation 
-##---- Umar Daraz - Rashed Alsara - Baha Qanier
+##---- Umar Daraz - Mohamad Yehya - Baha Qanier
 ##---- 29/5/2022
 
 library(activityinfo)
