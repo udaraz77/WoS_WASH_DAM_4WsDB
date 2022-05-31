@@ -76,6 +76,9 @@ df_DAMData_All <- activityinfo::queryTable("cfchybhl3tytgjd3",columns = c(id = "
                                                                           ,Value = "Value")
                                                                           ,truncate.strings = TRUE)
 
+
+df_DAMData_All[is.na(df_DAMData_All$TotalBenefReached)]<-0
+
 #***************************** SO1 **********************
 
       
