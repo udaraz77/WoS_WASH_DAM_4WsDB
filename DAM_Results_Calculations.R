@@ -79,22 +79,12 @@ df_DAMData_All <- activityinfo::queryTable("cfchybhl3tytgjd3",columns = c(id = "
                                                                           ,truncate.strings = TRUE))
 
 
-
-
-
-
-DAM4WS_Data_Pivot13 <- DAM4WS_Data_Pivot12 %>%
-  # filter(SO==1) %>% 
-  group_by(ReportingMonth) %>% 
-  summarise_at(c("TotalBenefReached"), sum)
-
-
 df_DAMData_All[is.na(df_DAMData_All$TotalBenefReached)]<-0
 
-#***************************DAM WASH-IND (SO1)***********************************************************************
+#***************************DAM WASH-IND (SO1)************************************----
 
 DAM4WS_Data_Pivot11 <- df_DAMData_All %>%
-  filter(SO==1,ActivityStatus == "Completed" ) %>% 
+  filter(SO==1,ActivityStatus == "Completed") %>% 
   group_by(ReportingMonth,
            month4w,
            Admin1Code,
@@ -123,7 +113,7 @@ DAM4WS_Data_Pivot12 <- DAM4WS_Data_Pivot11 %>%
   summarise_at(c("TotalBenefReached"), max)
 
 DAM4WS_Data_Pivot12[,"sector"]<- "WASH_ind"
-#***************************DAM WASH-Dir (SO2)***********************************************************************
+#***************************DAM WASH-Dir (SO2)************************************
 
 DAM4WS_Data_Pivot21 <- df_DAMData_All %>%
   filter(SO==2,ActivityStatus == "Completed" ) %>% 
@@ -154,7 +144,7 @@ DAM4WS_Data_Pivot22[,"sector"]<- "WASH_dir"
 WASH_DAM1 <- rbind(DAM4WS_Data_Pivot12,DAM4WS_Data_Pivot22)
 WASH_DAM <- rbind(DAM4WS_Data_Pivot12,DAM4WS_Data_Pivot22)
 
-#****************************OCHA ********************************************************************
+#****************************monthly reach for OCHA************************************
 WASH_DAM[,"month4w"]<- ifelse(WASH_DAM$month4w>9,WASH_DAM$month4w,paste(0,WASH_DAM$month4w,sep = ""))
 
 
@@ -181,36 +171,80 @@ WASH_DAM <- WASH_DAM[,c("record_id","gov_pcode","district_pcode","subdistrict_pc
 
 
 write.csv(WASH_DAM,"DAMmonthly_results22.csv")
-#****************************DAM Each monthly table
+#****************************DAM Each monthly table************************************
 DAM_monthly<- WASH_DAM1 %>% 
   group_by(ReportingMonth,sector) %>% 
   summarise_at(c("TotalBenefReached"),sum)
 write.csv(DAM_monthly,"DAMmonthly_results.csv")
 
-#***************************** SO1 **********************
+#***************************cumulative calculations ************************************----
+#***************************DAM WASH-IND (SO1)************************************
 
-      
-      DAM4WS_Data_Pivot11 <- df_DAMData_All %>%
-        filter(SO==1,ActivityStatus == "Completed" ) %>% 
-        group_by(ReportingMonth,
-                 Admin3Code,
-                 LocationCode,
-                 Activty) %>% 
-        summarise_at(c("TotalBenefReached"), sum)
-        
-        
-      DAM4WS_Data_Pivot12 <- DAM4WS_Data_Pivot11 %>%
-       # filter(SO==1) %>% 
-        group_by(ReportingMonth,
-                 Admin3Code,
-                 LocationCode) %>% 
-        summarise_at(c("TotalBenefReached"), max)
-        
-      DAM4WS_Data_Pivot13 <- DAM4WS_Data_Pivot12 %>%
-        # filter(SO==1) %>% 
-        group_by(ReportingMonth) %>% 
-        summarise_at(c("TotalBenefReached"), sum)
-  
-  
-      write.csv(DAM4WS_Data_Pivot13,"DAMmonthly_results1.csv")
-  
+DAM4WS_Data_Pivot11 <- df_DAMData_All %>%
+  filter(SO==1, ActivityStatus == "Completed", BenefReachedBefore =="No\\(New beneficiaries)") %>% 
+  group_by(Admin1Code,
+           Admin2Code,
+           Admin3Code,
+           Admin4Code,
+           LocationCode,
+           #ReportingMonth,
+           #month4w,
+           Activty) %>% 
+  summarise_at(c("TotalBenefReached"), sum)
+
+#*************************************capping *******
+#*
+#*
+#*
+#****************************************************
+DAM4WS_Data_Pivot12 <- DAM4WS_Data_Pivot11 %>%
+  # filter(SO==1) %>% 
+  group_by(#ReportingMonth,
+           #month4w,
+           Admin1Code,
+           Admin2Code,
+           Admin3Code,
+           Admin4Code,
+           LocationCode,
+  ) %>% 
+  summarise_at(c("TotalBenefReached"), max)
+
+DAM4WS_Data_Pivot12[,"sector"]<- "WASH_ind"
+
+
+DAM4WS_Data_Pivot13 <- DAM4WS_Data_Pivot12 %>%
+  # filter(SO==1) %>% 
+  group_by() %>% 
+  summarise_at(c("TotalBenefReached"), sum)
+
+
+#***************************DAM WASH-Dir (SO2)************************************
+
+DAM4WS_Data_Pivot21 <- df_DAMData_All %>%
+  filter(SO==2,ActivityStatus == "Completed", BenefReachedBefore =="No\\(New beneficiaries)" ) %>% 
+  group_by(#ReportingMonth,
+           #month4w,
+           Admin1Code,
+           Admin2Code,
+           Admin3Code,
+           Admin4Code,
+           LocationCode,
+           Activty) %>% 
+  summarise_at(c("TotalBenefReached"), sum)
+
+DAM4WS_Data_Pivot22 <- DAM4WS_Data_Pivot21 %>%
+  # filter(SO==1) %>% 
+  group_by(#ReportingMonth,
+           #month4w,
+           Admin1Code,
+           Admin2Code,
+           Admin3Code,
+           Admin4Code,
+           LocationCode,
+  ) %>% 
+  summarise_at(c("TotalBenefReached"), max)
+
+DAM4WS_Data_Pivot22[,"sector"]<- "WASH_dir"
+
+WASH_DAM1 <- rbind(DAM4WS_Data_Pivot12,DAM4WS_Data_Pivot22)
+WASH_DAM <- rbind(DAM4WS_Data_Pivot12,DAM4WS_Data_Pivot22)
