@@ -7,7 +7,7 @@ library(dplyr)
 
 activityInfoLogin("udaraz@unicef.org", "akhter123")
 
-
+Data#----
 df_DAMData_All <- activityinfo::queryTable("cfchybhl3tytgjd3",columns = c(id = "_id"
                                                                           ,sn="SN"
                                                                           ,UNFunds = "UNFunds"
@@ -170,7 +170,7 @@ WASH_DAM <- WASH_DAM[,c("record_id","gov_pcode","district_pcode","subdistrict_pc
                         "direct_indirect","hrp_nonhrp","beneficiaries","male_benef","female_benef","u18_male_benef","u18_female_benef","children_u5","masterid","notes")]
 
 
-write.csv(WASH_DAM,"DAMmonthly_results22.csv")
+write.csv(WASH_DAM,"final_wash_Dam.csv")
 #****************************DAM Each monthly table************************************
 DAM_monthly<- WASH_DAM1 %>% 
   group_by(ReportingMonth,sector) %>% 
@@ -179,7 +179,7 @@ write.csv(DAM_monthly,"DAMmonthly_results.csv")
 
 #***************************cumulative calculations ************************************----
 #***************************DAM WASH-IND (SO1)************************************
-
+month4w <-3
 DAM4WS_Data_Pivot11 <- df_DAMData_All %>%
   filter(SO==1, ActivityStatus == "Completed", BenefReachedBefore =="No\\(New beneficiaries)") %>% 
   group_by(Admin1Code,
@@ -246,5 +246,34 @@ DAM4WS_Data_Pivot22 <- DAM4WS_Data_Pivot21 %>%
 
 DAM4WS_Data_Pivot22[,"sector"]<- "WASH_dir"
 
-WASH_DAM1 <- rbind(DAM4WS_Data_Pivot12,DAM4WS_Data_Pivot22)
-WASH_DAM <- rbind(DAM4WS_Data_Pivot12,DAM4WS_Data_Pivot22)
+WASH_DAMC1 <- rbind(DAM4WS_Data_Pivot12,DAM4WS_Data_Pivot22)
+WASH_DAMC <- rbind(DAM4WS_Data_Pivot12,DAM4WS_Data_Pivot22)
+
+
+
+#****************************Cumulative reach for OCHA************************************
+
+WASH_DAMC[,"year4w"]<-"2022"
+month4w<-ifelse(month4w>9,month4w,paste(0,month4w,sep = ""))
+
+WASH_DAMC[,"year_month"]<-paste(WASH_DAMC$year4w,month4w,sep = "")
+
+WASH_DAMC[,"hub_4w"]<-"SYR"
+WASH_DAMC[,"modality_type"]<-"Syria HCT"
+WASH_DAMC[,"main_sector"] <- "WASH"
+WASH_DAMC[,"gov_pcode"]<- WASH_DAMC[,"Admin1Code"]
+WASH_DAMC[,"district_pcode"]<- WASH_DAMC[,"Admin2Code"]
+WASH_DAMC[,"subdistrict_pcode"]<- WASH_DAMC[,"Admin3Code"]
+WASH_DAMC[,"community_pcode"]<- WASH_DAMC[,"Admin4Code"]
+WASH_DAMC[,"beneficiaries"]<- WASH_DAMC[,"TotalBenefReached"]
+
+
+WASH_DAMC[,c("neighborhood_pcode","access_status","org_type","implementing_type","delivery_modality","cash_conditionality","cash_delivery_mechanism","monthly_frequency","benef_type",
+             "direct_indirect","hrp_nonhrp","male_benef","female_benef","u18_male_benef","u18_female_benef","children_u5","masterid","notes","record_id","gov_pcode","district_pcode")]<-""
+
+
+WASH_DAMC <- WASH_DAMC[,c("record_id","gov_pcode","district_pcode","subdistrict_pcode","community_pcode","beneficiaries","sector","hub_4w",
+                          "access_status","year_month", "modality_type","hrp_nonhrp","direct_indirect","masterid")]
+
+write.csv(WASH_DAMC,"final_WASH_DAMCC.csv")
+
