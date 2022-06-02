@@ -2,11 +2,20 @@
 ##---- Umar Daraz - Mohamad Yehya - Baha Qanier
 ##---- 29/5/2022
 
+#loading Packages ********************************-------------
 library(activityinfo)
 library(dplyr)
+#library(stringr) #detach(package:stringr)
+
+
+
+#Login Activity Info ********************************-------------
 
 activityInfoLogin("udaraz@unicef.org", "akhter123")
 
+
+#Downloading Data from Activity Info ********************************-------------
+##Damascus 4WS Data -----
 
 df_DAMData_All <- activityinfo::queryTable("cfchybhl3tytgjd3",columns = c(id = "_id"
                                                                           ,sn="SN"
@@ -75,13 +84,24 @@ df_DAMData_All <- activityinfo::queryTable("cfchybhl3tytgjd3",columns = c(id = "
                                                                           ,SO4 = "SO4"
                                                                           ,Unit = "Unit"
                                                                           ,Value = "Value"
-                                                                          ,month4w="month4w"
-                                                                          ,truncate.strings = TRUE))
-
+                                                                          ,month4w="month4w")
+                                                                          ,truncate.strings = TRUE)
 
 df_DAMData_All[is.na(df_DAMData_All$TotalBenefReached)]<-0
 
-#***************************DAM WASH-IND (SO1)************************************----
+##Download Population data ************************************----
+
+
+df_pop_2021 <- activityinfo::queryTable("c91z3ul3vaashs2",columns = c(id = "_id"
+                                                                      ,admin3Pcode = "admin3Pcode"
+                                                                      ,admin4Pcode = "admin4Pcode"
+                                                                      ,Pop_Date = "Pop_Date"
+                                                                      ,PopEstimate = "PopEstimate")
+                                                                      ,truncate.strings = TRUE)
+df_pop_2021 <- df_pop_2021[df_pop_2021$Pop_Date == "2021-05-15", ]
+
+
+#***************************DAM WASH-IND (SO1) - Month wise ************************************----
 
 DAM4WS_Data_Pivot11 <- df_DAMData_All %>%
   filter(SO==1,ActivityStatus == "Completed") %>% 
@@ -95,11 +115,7 @@ DAM4WS_Data_Pivot11 <- df_DAMData_All %>%
            Activty) %>% 
   summarise_at(c("TotalBenefReached"), sum)
 
-#*************************************capping *******
-#*
-#*
-#*
-#****************************************************
+
 DAM4WS_Data_Pivot12 <- DAM4WS_Data_Pivot11 %>%
   # filter(SO==1) %>% 
   group_by(ReportingMonth,
@@ -112,7 +128,43 @@ DAM4WS_Data_Pivot12 <- DAM4WS_Data_Pivot11 %>%
            ) %>% 
   summarise_at(c("TotalBenefReached"), max)
 
+#*************************************capping *******
+#*
+colnames(df_pop_2021) <- c("id","Admin3Code","Admin4Code","Pop_Date","PopEstimate")
+
+DAM4WS_Data_Pivot123 <- merge(x=DAM4WS_Data_Pivot12, y=df_pop_2021, by = "Admin4Code", all.x=TRUE)
+
+# we need to avoid following steps but I don't know how join only with selected column from the right side table, this is left join BTW. 
+DAM4WS_Data_Pivot123 <- DAM4WS_Data_Pivot123[,c(2,3,4,5,6,1,7,8,12)]
+
+colnames(DAM4WS_Data_Pivot123) = c("ReportingMonth","month4w","Admin1Code","Admin2Code","Admin3Code","Admin4Code","LocationCode","TotalBenefReached","PopEstimate")
+
+# applying capping here 
+DAM4WS_Data_Pivot123$NetBenef <- ifelse(DAM4WS_Data_Pivot123$TotalBenefReached == 0, DAM4WS_Data_Pivot123$PopEstimate,
+                                        ifelse(DAM4WS_Data_Pivot123$PopEstimate == 0,DAM4WS_Data_Pivot123$TotalBenefReached,
+                                               ifelse(DAM4WS_Data_Pivot123$TotalBenefReached>DAM4WS_Data_Pivot123$PopEstimate,
+                                                      DAM4WS_Data_Pivot123$PopEstimate,
+                                                      DAM4WS_Data_Pivot123$TotalBenefReached)))
+DAM4WS_Data_Pivot12 <- DAM4WS_Data_Pivot123 #reassigned to original dataframe
+rm(DAM4WS_Data_Pivot123) # Remove the temporary dataframe
+
+#summarizing results
+
+DAM4WS_Data_summary<- DAM4WS_Data_Pivot12 %>%
+  # filter(SO==1) %>% 
+  group_by(ReportingMonth
+  ) %>% 
+  summarise_at(c("TotalBenefReached"), sum)
+
+#NetBenef
+
+#****************************************************
+
 DAM4WS_Data_Pivot12[,"sector"]<- "WASH_ind"
+
+#*************** close SO-1 Calculation ********************
+
+
 #***************************DAM WASH-Dir (SO2)************************************
 
 DAM4WS_Data_Pivot21 <- df_DAMData_All %>%
